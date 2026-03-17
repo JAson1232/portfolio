@@ -571,6 +571,99 @@
     </div>
   </footer>
 
+  <!-- Hidden YouTube player container -->
+  <div id="yt-player" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;"></div>
+
+  <!-- ══ MUSIC WIDGET ═══════════════════════════════════════ -->
+  <div id="music-widget" class="music-widget">
+    <div class="music-widget-top">
+      <div class="music-eq" id="music-eq">
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+      </div>
+      <div class="music-meta">
+        <div class="music-label">// NOW PLAYING</div>
+        <div class="music-title">TRON LEGACY — SOUNDTRACK</div>
+      </div>
+      <button class="music-collapse" id="music-collapse" title="Minimise">−</button>
+    </div>
+    <div class="music-widget-bottom">
+      <button class="music-mute-btn" id="music-mute-btn">
+        <span id="mute-icon">🔇</span>
+        <span id="mute-label">UNMUTE</span>
+      </button>
+      <a class="music-yt-link"
+         href="https://www.youtube.com/watch?v=-2C_P2N0LA8"
+         target="_blank" rel="noopener" title="Open on YouTube">YT ↗</a>
+    </div>
+  </div>
+
+  <!-- YouTube IFrame API (must be non-module so YT can call the global callback) -->
+  <script>
+    // Expose the ready callback globally before the API script loads
+    window.onYouTubeIframeAPIReady = function () {
+      var player = new YT.Player('yt-player', {
+        videoId: '-2C_P2N0LA8',
+        playerVars: {
+          autoplay:   1,
+          mute:       1,
+          controls:   0,
+          loop:       1,
+          playlist:   '-2C_P2N0LA8',
+          list:       'RD-2C_P2N0LA8',
+          listType:   'playlist',
+          rel:        0,
+          modestbranding: 1,
+        },
+        events: {
+          onReady: function (e) {
+            e.target.playVideo();
+            // Animate EQ bars while playing
+            document.getElementById('music-eq').classList.add('playing');
+          },
+          onStateChange: function (e) {
+            var eq = document.getElementById('music-eq');
+            // YT.PlayerState.PLAYING === 1
+            eq.classList.toggle('playing', e.data === 1);
+          }
+        }
+      });
+
+      // Mute / unmute toggle
+      document.getElementById('music-mute-btn').addEventListener('click', function () {
+        if (player.isMuted()) {
+          player.unMute();
+          document.getElementById('mute-icon').textContent  = '🔊';
+          document.getElementById('mute-label').textContent = 'MUTE';
+          document.getElementById('music-mute-btn').classList.add('unmuted');
+        } else {
+          player.mute();
+          document.getElementById('mute-icon').textContent  = '🔇';
+          document.getElementById('mute-label').textContent = 'UNMUTE';
+          document.getElementById('music-mute-btn').classList.remove('unmuted');
+        }
+      });
+
+      // Collapse / expand toggle
+      var collapsed = false;
+      document.getElementById('music-collapse').addEventListener('click', function () {
+        collapsed = !collapsed;
+        document.getElementById('music-widget').classList.toggle('collapsed', collapsed);
+        this.textContent = collapsed ? '+' : '−';
+      });
+    };
+
+    // Load the YouTube IFrame API
+    (function () {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    })();
+  </script>
+
   <script src="./src/main.js" type="module"></script>
 </body>
 </html>
