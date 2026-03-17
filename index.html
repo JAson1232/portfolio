@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IASON SOMOGLOU // THE GRID</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+  <!-- Background canvas -->
+  <canvas id="bg-canvas"></canvas>
+  <!-- Scanline sweep -->
+  <div class="scanline"></div>
+
+  <!-- ══ NAVIGATION ══════════════════════════════════════════ -->
+  <nav id="navbar">
+    <div class="nav-logo">
+      <span class="nav-logo-bracket">[</span>
+      <span class="nav-logo-text">IS</span>
+      <span class="nav-logo-bracket">]</span>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="#home"       class="nav-link active" data-section="home">HOME</a></li>
+      <li><a href="#about"      class="nav-link"        data-section="about">ABOUT</a></li>
+      <li><a href="#experience" class="nav-link"        data-section="experience">EXPERIENCE</a></li>
+      <li><a href="#education"  class="nav-link"        data-section="education">EDUCATION</a></li>
+      <li><a href="#skills"     class="nav-link"        data-section="skills">SKILLS</a></li>
+      <li><a href="#projects"   class="nav-link"        data-section="projects">PROJECTS</a></li>
+      <li><a href="#interests"  class="nav-link"        data-section="interests">INTERESTS</a></li>
+      <li><a href="#contact"    class="nav-link"        data-section="contact">CONTACT</a></li>
+    </ul>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <main>
+
+    <!-- ══ HERO ═══════════════════════════════════════════════ -->
+    <section id="home" class="section hero-section">
+      <div class="hero-content">
+
+        <!-- Identity Disk -->
+        <div class="identity-disk">
+          <div class="disk-node"></div>
+          <div class="disk-node"></div>
+          <div class="disk-node"></div>
+          <div class="disk-ring ring-outer"></div>
+          <div class="disk-ring ring-mid"></div>
+          <div class="disk-ring ring-inner"></div>
+          <div class="disk-core">IS</div>
+          <div class="disk-seg seg-1"></div>
+          <div class="disk-seg seg-2"></div>
+          <div class="disk-seg seg-3"></div>
+          <div class="disk-seg seg-4"></div>
+        </div>
+
+        <!-- Text -->
+        <div class="hero-text">
+          <div class="hero-tag">// PROGRAM IDENTITY AUTHENTICATED</div>
+          <h1 class="hero-name glitch" data-text="IASON SOMOGLOU">IASON SOMOGLOU</h1>
+          <div class="hero-subtitle">
+            <span id="typewriter"></span><span class="cursor-blink">_</span>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat">
+              <span class="stat-value">3+</span>
+              <span class="stat-label">YEARS EXP</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+              <span class="stat-value">4</span>
+              <span class="stat-label">COMPANIES</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+              <span class="stat-value">VU</span>
+              <span class="stat-label">AMSTERDAM</span>
+            </div>
+          </div>
+
+          <div class="hero-cta">
+            <a href="#about"   class="btn-primary">ACCESS THE GRID</a>
+            <a href="#contact" class="btn-secondary">INITIATE CONTACT</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-indicator">
+        <span>SCROLL</span>
+        <div class="scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- ══ ABOUT ══════════════════════════════════════════════ -->
+    <section id="about" class="section">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">// MODULE 01</span>
+          <h2 class="section-title">ABOUT <span class="highlight">THE PROGRAM</span></h2>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-bio reveal-left">
+            <p class="bio-text">
+              Greetings, User. I am an AI developer and Machine Learning engineer currently
+              pursuing a BSc in Artificial Intelligence at Vrije Universiteit Amsterdam,
+              with a Minor in Deep Learning.
+            </p>
+            <p class="bio-text">
+              My programs have been running in the real world since 2022 — at Tesla, SkillLab.io,
+              EY, and Martech Tribe — solving complex problems in NLP, ML pipelines, transformer
+              architectures, and intelligent systems.
+            </p>
+            <p class="bio-text">
+              I was recognised by Forbes 30 Under 30 Greece, hold a patent for an assistive cane,
+              and came 1st place both nationally and <strong style="color:var(--neon-blue);text-shadow:var(--glow-sm)">globally</strong>
+              at the Robotics Competitions — some of the world's largest global robotics competitions (WRO,FGC, etc.).
+            </p>
+            <div class="bio-badges">
+              <span class="badge">Forbes 30U30 Greece</span>
+              <span class="badge">Patent Holder</span>
+              <span class="badge">WRO World Champion</span>
+            </div>
+          </div>
+
+          <div class="about-info reveal-right">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">STATUS</span>
+                <span class="info-value status-active">● ONLINE</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">LOCATION</span>
+                <span class="info-value">AMSTERDAM, NL</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">DEGREE</span>
+                <span class="info-value">BSc AI @ VU</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">FOCUS</span>
+                <span class="info-value">ML / NLP / DL</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">CURRENT OP</span>
+                <span class="info-value">TESLA INTERN</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">GRADUATION</span>
+                <span class="info-value">JULY 2026</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ EXPERIENCE ═════════════════════════════════════════ -->
+    <section id="experience" class="section">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">// MODULE 02</span>
+          <h2 class="section-title">COMBAT <span class="highlight">HISTORY</span></h2>
+        </div>
+
+        <div class="timeline">
+
+          <div class="timeline-item reveal">
+            <div class="timeline-header">
+              <h3 class="timeline-company">TESLA</h3>
+              <span class="timeline-period">MAR 2025 – NOV 2025</span>
+            </div>
+            <div class="timeline-role">Machine Learning Intern</div>
+            <p class="timeline-desc">
+              Deployed end-to-end NLP/ML pipeline for vehicle diagnostics. Trained transformer-based
+              models and sentence embeddings for semantic search and intent classification.
+              Containerised services with FastAPI &amp; Docker.
+            </p>
+            <div class="timeline-tags">
+              <span class="tag">PyTorch</span>
+              <span class="tag">Transformers</span>
+              <span class="tag">FastAPI</span>
+              <span class="tag">Docker</span>
+              <span class="tag">Semantic Search</span>
+            </div>
+          </div>
+
+          <div class="timeline-item reveal">
+            <div class="timeline-header">
+              <h3 class="timeline-company">SKILLLAB.IO</h3>
+              <span class="timeline-period">APR 2024 – MAR 2025</span>
+            </div>
+            <div class="timeline-role">Machine Learning Intern</div>
+            <p class="timeline-desc">
+              Developed replication recommender systems using BERT models and cosine similarity.
+              Identified bugs in production systems, upgraded libraries, and streamlined CI/CD
+              with GitHub and Jira.
+            </p>
+            <div class="timeline-tags">
+              <span class="tag">BERT</span>
+              <span class="tag">Recommender Systems</span>
+              <span class="tag">Cosine Similarity</span>
+              <span class="tag">CI/CD</span>
+              <span class="tag">Python</span>
+            </div>
+          </div>
+
+          <div class="timeline-item reveal">
+            <div class="timeline-header">
+              <h3 class="timeline-company">EY (ERNST &amp; YOUNG)</h3>
+              <span class="timeline-period">JUN 2023 – AUG 2023</span>
+            </div>
+            <div class="timeline-role">Machine Learning Intern</div>
+            <p class="timeline-desc">
+              Developed an evaluation framework for large language models, benchmarking performance
+              across business domains and client-specific requirements.
+            </p>
+            <div class="timeline-tags">
+              <span class="tag">LLM Evaluation</span>
+              <span class="tag">Benchmarking</span>
+              <span class="tag">NLP</span>
+            </div>
+          </div>
+
+          <div class="timeline-item reveal">
+            <div class="timeline-header">
+              <h3 class="timeline-company">MARTECH TRIBE</h3>
+              <span class="timeline-period">SEPT 2022 – SEPT 2023</span>
+            </div>
+            <div class="timeline-role">Machine Learning Developer</div>
+            <p class="timeline-desc">
+              Implemented proprietary algorithms for vendor matching using SVMs, BERT, and Deep Neural
+              Networks to optimise operational efficiency.
+            </p>
+            <div class="timeline-tags">
+              <span class="tag">SVM</span>
+              <span class="tag">BERT</span>
+              <span class="tag">Neural Networks</span>
+              <span class="tag">Vendor Matching</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ EDUCATION ══════════════════════════════════════════ -->
+    <section id="education" class="section">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">// MODULE 03</span>
+          <h2 class="section-title">TRAINING <span class="highlight">PROTOCOLS</span></h2>
+        </div>
+
+        <!-- Degree card -->
+        <div class="edu-main-card reveal">
+          <div class="edu-logo">VU</div>
+          <div class="edu-info">
+            <h3>VRIJE UNIVERSITEIT AMSTERDAM</h3>
+            <div class="edu-degree">BSc in Artificial Intelligence</div>
+            <div class="edu-minor">Minor: Economics</div>
+            <div class="edu-period">2022 – July 2026 (Expected)</div>
+          </div>
+        </div>
+
+        <!-- Courses -->
+        <div class="courses-header">
+          <h3 class="courses-title">LOADED MODULES — CLICK TO EXPAND</h3>
+          <div class="courses-filter">
+            <button class="filter-btn active" data-filter="all">ALL</button>
+            <button class="filter-btn" data-filter="foundations">FOUNDATIONS</button>
+            <button class="filter-btn" data-filter="core-ai">CORE AI</button>
+            <button class="filter-btn" data-filter="advanced">ADVANCED</button>
+            <button class="filter-btn" data-filter="minor">MINOR: ECON</button>
+          </div>
+        </div>
+        <div class="courses-grid" id="courses-grid"></div>
+
+      </div>
+    </section>
+
+    <!-- ══ SKILLS ═════════════════════════════════════════════ -->
+    <section id="skills" class="section">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">// MODULE 04</span>
+          <h2 class="section-title">PROGRAM <span class="highlight">PARAMETERS</span></h2>
+        </div>
+
+        <div class="skills-grid">
+
+          <!-- ML / AI -->
+          <div class="skill-category reveal">
+            <h3 class="skill-cat-title">ML / AI</h3>
+            <div class="skill-bars">
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>Machine Learning</span><span class="skill-pct">92%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:92%"></div></div>
+              </div>
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>NLP / Transformers</span><span class="skill-pct">90%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:90%"></div></div>
+              </div>
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>Deep Learning</span><span class="skill-pct">88%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:88%"></div></div>
+              </div>
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>Computer Vision</span><span class="skill-pct">78%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:78%"></div></div>
+              </div>
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>Reinforcement Learning</span><span class="skill-pct">75%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:75%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LANGUAGES -->
+          <div class="skill-category reveal">
+            <h3 class="skill-cat-title">LANGUAGES</h3>
+            <div class="skill-bars">
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>Python</span><span class="skill-pct">95%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:95%"></div></div>
+              </div>
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>SQL</span><span class="skill-pct">82%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:82%"></div></div>
+              </div>
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>JavaScript</span><span class="skill-pct">70%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:70%"></div></div>
+              </div>
+              <div class="skill-bar-item">
+                <div class="skill-label"><span>Java / C++</span><span class="skill-pct">65%</span></div>
+                <div class="skill-track"><div class="skill-fill" style="--target:65%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FRAMEWORKS -->
+          <div class="skill-category reveal">
+            <h3 class="skill-cat-title">FRAMEWORKS &amp; LIBRARIES</h3>
+            <div class="skill-tags">
+              <span class="stag">PyTorch</span>
+              <span class="stag">TensorFlow</span>
+              <span class="stag">Scikit-learn</span>
+              <span class="stag">HuggingFace</span>
+              <span class="stag">FastAPI</span>
+              <span class="stag">Docker</span>
+              <span class="stag">Pandas</span>
+              <span class="stag">NumPy</span>
+              <span class="stag">LangChain</span>
+              <span class="stag">MLflow</span>
+            </div>
+          </div>
+
+          <!-- TOOLS -->
+          <div class="skill-category reveal">
+            <h3 class="skill-cat-title">TOOLS &amp; PLATFORMS</h3>
+            <div class="skill-tags">
+              <span class="stag">Git</span>
+              <span class="stag">GitHub Actions</span>
+              <span class="stag">Jira</span>
+              <span class="stag">Linux</span>
+              <span class="stag">VS Code</span>
+              <span class="stag">Jupyter</span>
+              <span class="stag">Weights &amp; Biases</span>
+              <span class="stag">Azure</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ PROJECTS ════════════════════════════════════════════ -->
+    <section id="projects" class="section">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">// MODULE 05</span>
+          <h2 class="section-title">EXECUTED <span class="highlight">PROGRAMS</span></h2>
+        </div>
+
+        <div class="projects-grid">
+
+          <div class="project-card reveal">
+            <div class="project-header">
+              <span class="project-id">PRG_001</span>
+            </div>
+            <h3 class="project-title">Deep-Q Learning for Schnapsen</h3>
+            <p class="project-desc">
+              Developed a custom DQN agent using PyTorch for discrete action spaces.
+              Built a reinforcement learning environment with self-play, experience replay,
+              and Huber loss optimisation.
+            </p>
+            <div class="project-tags">
+              <span class="tag">PyTorch</span>
+              <span class="tag">Reinforcement Learning</span>
+              <span class="tag">DQN</span>
+              <span class="tag">Self-play</span>
+              <span class="tag">Experience Replay</span>
+            </div>
+          </div>
+
+          <div class="project-card reveal">
+            <div class="project-header">
+              <span class="project-id">PRG_002 // BSc THESIS</span>
+              <span class="project-id" style="color:var(--neon-pink);text-shadow:var(--glow-pink)">IN PROGRESS</span>
+            </div>
+            <h3 class="project-title">Spectral LoRA</h3>
+            <p class="project-desc">
+              Developing a novel fine-tuning method that adapts Low-Rank Adaptation (LoRA) across transformer
+              layers according to each layer's intrinsic dimensionality. By applying Singular Value Decomposition
+              to measure stable rank, the method allocates variable LoRA ranks per layer — achieving more efficient
+              fine-tuning while deepening understanding of how transformer models represent information.
+              Sits at the intersection of applied ML and theoretical insight, reflecting a move from
+              engineering systems to research-informed development.
+            </p>
+            <div class="project-tags">
+              <span class="tag">LoRA</span>
+              <span class="tag">SVD</span>
+              <span class="tag">Transformers</span>
+              <span class="tag">Intrinsic Dimensionality</span>
+              <span class="tag">Fine-tuning</span>
+              <span class="tag">Stable Rank</span>
+              <span class="tag">PyTorch</span>
+            </div>
+          </div>
+
+          <div class="project-card coming-soon-card reveal">
+            <div class="project-header">
+              <span class="project-id">PRG_003</span>
+            </div>
+            <div>
+              <span class="classified-text">MORE PROGRAMS</span>
+              <span class="classified-sub">// UPLOADING...</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ INTERESTS ══════════════════════════════════════════ -->
+    <section id="interests" class="section">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">// MODULE 06</span>
+          <h2 class="section-title">OFF-GRID <span class="highlight">ACTIVITIES</span></h2>
+        </div>
+
+        <div class="interests-grid">
+          <div class="interest-card reveal">
+            <span class="interest-icon">🏐</span>
+            <div class="interest-label">VOLLEYBALL</div>
+            <div class="interest-status">ACTIVE</div>
+          </div>
+          <div class="interest-card reveal">
+            <span class="interest-icon">🏋️</span>
+            <div class="interest-label">WORKOUT</div>
+            <div class="interest-status">ACTIVE</div>
+          </div>
+          <div class="interest-card reveal">
+            <span class="interest-icon">🎹</span>
+            <div class="interest-label">PIANO</div>
+            <div class="interest-status">ACTIVE</div>
+          </div>
+          <div class="interest-card reveal">
+            <span class="interest-icon">✈️</span>
+            <div class="interest-label">TRAVELLING</div>
+            <div class="interest-status">ACTIVE</div>
+          </div>
+          <div class="interest-card reveal">
+            <span class="interest-icon">⚙️</span>
+            <div class="interest-label">BUILDING THINGS</div>
+            <div class="interest-status">ACTIVE</div>
+          </div>
+          <div class="interest-card reveal">
+            <span class="interest-icon">⬡</span>
+            <div class="interest-label">TECHNOLOGY</div>
+            <div class="interest-status">ACTIVE</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTACT ════════════════════════════════════════════ -->
+    <section id="contact" class="section">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">// MODULE 07</span>
+          <h2 class="section-title">OPEN <span class="highlight">CHANNEL</span></h2>
+        </div>
+
+        <div class="contact-grid">
+
+          <!-- Left: links -->
+          <div class="contact-info reveal-left">
+            <p class="contact-desc">
+              Ready to collaborate? Transmit your message through the grid.
+              All communications are logged by the MCP.
+            </p>
+            <div class="contact-links">
+              <a href="mailto:jason.somoglou@gmail.com" class="contact-link">
+                <span class="cl-icon">✉</span>
+                <span>EMAIL</span>
+                <span class="cl-arrow">→</span>
+              </a>
+              <a href="https://www.linkedin.com/in/iason-somoglou-070039160/" target="_blank" rel="noopener" class="contact-link">
+                <span class="cl-icon">in</span>
+                <span>LINKEDIN</span>
+                <span class="cl-arrow">→</span>
+              </a>
+              <a href="https://github.com/JAson1232" target="_blank" rel="noopener" class="contact-link">
+                <span class="cl-icon">⌥</span>
+                <span>GITHUB</span>
+                <span class="cl-arrow">→</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: form -->
+          <div class="contact-form-wrapper reveal-right">
+            <form id="contact-form" class="contact-form">
+              <div class="form-group">
+                <label class="form-label">// IDENTIFIER</label>
+                <input type="text" class="form-input" placeholder="YOUR_NAME" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">// RETURN_ADDRESS</label>
+                <input type="email" class="form-input" placeholder="YOUR_EMAIL" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">// TRANSMISSION</label>
+                <textarea class="form-input" placeholder="YOUR_MESSAGE" rows="5" required></textarea>
+              </div>
+              <button type="submit" class="btn-primary btn-submit" id="submit-btn">
+                <span id="submit-text">TRANSMIT</span>
+              </button>
+            </form>
+
+            <div id="form-success" class="form-success hidden">
+              <div class="success-icon">✓</div>
+              <div class="success-text">TRANSMISSION RECEIVED</div>
+              <div class="success-sub">Message queued for processing. End of line.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <span>IASON SOMOGLOU</span>
+      <span class="footer-sep">|</span>
+      <span>THE GRID</span>
+      <span class="footer-sep">|</span>
+      <span>END OF LINE</span>
+    </div>
+  </footer>
+
+  <script src="/src/main.js" type="module"></script>
+</body>
+</html>
