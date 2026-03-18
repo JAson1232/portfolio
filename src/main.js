@@ -465,6 +465,199 @@ const particles  = Array.from({ length: 55 }, () => new Particle());
 const streams    = Array.from({ length: 9  }, () => new Stream());
 const gridNodes  = Array.from({ length: 18 }, () => new GridNode());
 
+// ── Light Cycles ──────────────────────────────────────────
+class LightCycle {
+  constructor(color, startDelay = 0) {
+    this.color = color;
+    // Parse once for rgba reuse
+    this.r = parseInt(color.slice(1, 3), 16);
+    this.g = parseInt(color.slice(3, 5), 16);
+    this.b = parseInt(color.slice(5, 7), 16);
+    this.startDelay = startDelay;
+    this.started = false;
+    this.trail = [];
+    this.reset();
+  }
+
+  reset() {
+    // Spawn at a random grid intersection, safely inside screen
+    this.x = (Math.floor(Math.random() * Math.max(1, Math.floor(W / GRID) - 1)) + 1) * GRID;
+    this.y = (Math.floor(Math.random() * Math.max(1, Math.floor(H / GRID) - 1)) + 1) * GRID;
+    // Pick a cardinal direction: 0=right, 90=down, 180=left, 270=up
+    this.angle  = [0, Math.PI / 2, Math.PI, -Math.PI / 2][Math.floor(Math.random() * 4)];
+    this.speed  = Math.random() * 1.4 + 1.8;          // px per frame
+    this.trail  = [{ x: this.x, y: this.y }];
+    this.distTraveled = 0;
+    this.nextTurn     = (Math.floor(Math.random() * 4) + 3) * GRID;
+    this.frame  = 0;
+  }
+
+  update() {
+    if (!this.started) return;
+
+    const cos = Math.cos(this.angle);
+    const sin = Math.sin(this.angle);
+    this.x += cos * this.speed;
+    this.y += sin * this.speed;
+    this.distTraveled += this.speed;
+    this.frame++;
+
+    // Sample trail point every 4 frames for a dense-enough trail
+    if (this.frame % 4 === 0) {
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > 120) this.trail.shift();
+    }
+
+    // Turn at 90° when we've covered enough distance
+    if (this.distTraveled >= this.nextTurn) {
+      // Snap to nearest grid intersection before turning
+      this.x = Math.round(this.x / GRID) * GRID;
+      this.y = Math.round(this.y / GRID) * GRID;
+      this.trail.push({ x: this.x, y: this.y }); // record the corner
+
+      const turn = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+      this.angle = ((this.angle + turn) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+
+      this.distTraveled = 0;
+      this.nextTurn = (Math.floor(Math.random() * 5) + 3) * GRID;
+    }
+
+    // Respawn when fully off-screen
+    if (this.x < -120 || this.x > W + 120 || this.y < -120 || this.y > H + 120) {
+      this.reset();
+    }
+  }
+
+  draw() {
+    if (!this.started || this.trail.length < 2) return;
+
+    const pts = this.trail;
+    const { r, g, b } = this;
+
+    // ── Trail: rendered in 8 alpha-batches for performance ──
+    const BATCHES = 8;
+    const step = Math.max(1, Math.ceil(pts.length / BATCHES));
+    for (let s = 0; s < BATCHES; s++) {
+      const from = s * step;
+      const to   = Math.min((s + 1) * step, pts.length - 1);
+      if (from >= pts.length - 1) break;
+
+      const t = (s + 0.5) / BATCHES;
+      const alpha = Math.pow(t, 1.6) * 0.88;
+
+      bgCtx.beginPath();
+      bgCtx.moveTo(pts[from].x, pts[from].y);
+      for (let i = from + 1; i <= to; i++) bgCtx.lineTo(pts[i].x, pts[i].y);
+
+      bgCtx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+      bgCtx.lineWidth   = t > 0.75 ? 2.5 : 1.8;
+      if (s >= BATCHES - 2) {
+        bgCtx.shadowBlur  = 12;
+        bgCtx.shadowColor = this.color;
+      }
+      bgCtx.stroke();
+      bgCtx.shadowBlur = 0;
+    }
+
+    // Bright tip where trail meets the bike
+    const tail = pts[pts.length - 1];
+    bgCtx.beginPath();
+    bgCtx.arc(tail.x, tail.y, 3, 0, Math.PI * 2);
+    bgCtx.fillStyle   = this.color;
+    bgCtx.shadowBlur  = 14;
+    bgCtx.shadowColor = this.color;
+    bgCtx.fill();
+    bgCtx.shadowBlur = 0;
+
+    // ── Bike body ──────────────────────────────────────────
+    this.drawBike();
+  }
+
+  drawBike() {
+    bgCtx.save();
+    bgCtx.translate(this.x, this.y);
+    bgCtx.rotate(this.angle);
+
+    const { r, g, b } = this;
+
+    bgCtx.shadowBlur  = 22;
+    bgCtx.shadowColor = this.color;
+
+    // ── Main chassis (elongated angular hexagon) ───────────
+    bgCtx.fillStyle = this.color;
+    bgCtx.beginPath();
+    bgCtx.moveTo( 15,  0);   // nose tip
+    bgCtx.lineTo(  9, -5);   // front-top
+    bgCtx.lineTo( -8, -5);   // rear-top
+    bgCtx.lineTo(-13, -2);   // rear-top-back
+    bgCtx.lineTo(-13,  2);   // rear-bottom-back
+    bgCtx.lineTo( -8,  5);   // rear-bottom
+    bgCtx.lineTo(  9,  5);   // front-bottom
+    bgCtx.closePath();
+    bgCtx.fill();
+
+    // ── Rider silhouette ───────────────────────────────────
+    bgCtx.beginPath();
+    bgCtx.moveTo( -1, -5);
+    bgCtx.lineTo(  0, -13);  // back of helmet
+    bgCtx.lineTo(  5, -14);  // helmet top
+    bgCtx.lineTo(  8, -10);  // visor
+    bgCtx.lineTo(  8,  -5);  // leaning forward
+    bgCtx.closePath();
+    bgCtx.fill();
+
+    // ── Front wheel ───────────────────────────────────────
+    bgCtx.lineWidth   = 1.5;
+    bgCtx.strokeStyle = this.color;
+    bgCtx.beginPath();
+    bgCtx.arc(9, 0, 4.5, 0, Math.PI * 2);
+    bgCtx.stroke();
+    // Wheel hub
+    bgCtx.beginPath();
+    bgCtx.arc(9, 0, 1.5, 0, Math.PI * 2);
+    bgCtx.fillStyle = `rgba(${r},${g},${b},0.9)`;
+    bgCtx.fill();
+
+    // ── Rear wheel ────────────────────────────────────────
+    bgCtx.strokeStyle = this.color;
+    bgCtx.beginPath();
+    bgCtx.arc(-9, 0, 4.5, 0, Math.PI * 2);
+    bgCtx.stroke();
+    bgCtx.beginPath();
+    bgCtx.arc(-9, 0, 1.5, 0, Math.PI * 2);
+    bgCtx.fillStyle = `rgba(${r},${g},${b},0.9)`;
+    bgCtx.fill();
+
+    // ── Cockpit (bright white window slit) ────────────────
+    bgCtx.fillStyle   = 'rgba(255,255,255,0.95)';
+    bgCtx.shadowBlur  = 8;
+    bgCtx.shadowColor = '#ffffff';
+    bgCtx.fillRect(4, -3.5, 7, 7);
+
+    // ── Underbody glow line ────────────────────────────────
+    bgCtx.shadowBlur  = 6;
+    bgCtx.shadowColor = this.color;
+    bgCtx.strokeStyle = `rgba(${r},${g},${b},0.6)`;
+    bgCtx.lineWidth   = 1;
+    bgCtx.beginPath();
+    bgCtx.moveTo(-12, 0); bgCtx.lineTo(14, 0);
+    bgCtx.stroke();
+
+    bgCtx.restore();
+    bgCtx.shadowBlur = 0;
+  }
+}
+
+// Three cycles — 2 blue, 1 pink — staggered start times
+const lightCycles = [
+  new LightCycle('#00e5ff', 0),
+  new LightCycle('#ff00ff', 2500),
+  new LightCycle('#00e5ff', 5000),
+];
+lightCycles.forEach(c => {
+  setTimeout(() => { c.started = true; }, c.startDelay);
+});
+
 // ── Cursor trail ──────────────────────────────────────────
 const trailPts = [];
 document.addEventListener('mousemove', e => {
@@ -495,9 +688,10 @@ function bgAnimate() {
 
   drawGrid();
 
-  gridNodes.forEach(n => { n.update(); n.draw(); });
-  streams.forEach(s   => { s.update(); s.draw(); });
-  particles.forEach(p => { p.update(); p.draw(); });
+  gridNodes.forEach(n  => { n.update();  n.draw();  });
+  streams.forEach(s    => { s.update();  s.draw();  });
+  lightCycles.forEach(c => { c.update(); c.draw();  });
+  particles.forEach(p  => { p.update();  p.draw();  });
 
   drawTrail();
 
