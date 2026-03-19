@@ -1235,3 +1235,41 @@ main { position: relative; z-index: 1; }
   border-color: var(--neon-pink);
   box-shadow: var(--glow-pink);
 }
+
+/* ═══ SECRET ACCESS ══════════════════════════════════════════════ */
+.secret-access {
+  position: fixed;
+  bottom: 0.9rem;
+  right: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  opacity: 0.1;
+  transition: opacity 0.4s;
+  z-index: 50;
+}
+.secret-access:hover,
+.secret-access:focus-within { opacity: 0.55; }
+.secret-prompt {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--neon-blue);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.secret-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0,229,255,0.35);
+  color: var(--neon-blue);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  width: 4.5rem;
+  outline: none;
+  padding: 0.1rem 0.1rem;
+  letter-spacing: 0.12em;
+  caret-color: var(--neon-blue);
+}
+.secret-input::placeholder {
+  color: rgba(0,229,255,0.22);
+}

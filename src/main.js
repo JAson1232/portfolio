@@ -720,3 +720,21 @@ if (heroTag) {
 // INIT — render courses after DOM + observers set up
 // ============================================================
 renderCourses('all');
+
+// ============================================================
+// SECRET ACCESS
+// ============================================================
+(function () {
+  const input = document.getElementById('secret-input');
+  if (!input) return;
+  input.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    if (input.value.toLowerCase() === 'elou') {
+      window.location.href = './beach.html';
+    } else {
+      input.value = '';
+      input.placeholder = 'DENIED';
+      setTimeout(() => { input.placeholder = 'access'; }, 1800);
+    }
+  });
+})();
