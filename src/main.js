@@ -722,19 +722,366 @@ if (heroTag) {
 renderCourses('all');
 
 // ============================================================
-// SECRET ACCESS
+// SECRET ACCESS + BEACH OVERLAY
 // ============================================================
 (function () {
+  // ── Password gate ──────────────────────────────────────────
   const input = document.getElementById('secret-input');
-  if (!input) return;
-  input.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter') return;
-    if (input.value.toLowerCase() === 'elou') {
-      window.location.href = './beach.html';
-    } else {
-      input.value = '';
-      input.placeholder = 'DENIED';
-      setTimeout(() => { input.placeholder = 'access'; }, 1800);
-    }
+  if (input) {
+    input.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      if (input.value.toLowerCase() === 'elou') {
+        openBeach();
+      } else {
+        input.value = '';
+        input.placeholder = 'DENIED';
+        setTimeout(() => { input.placeholder = 'access'; }, 1800);
+      }
+    });
+  }
+
+  // ── Show / hide overlay ────────────────────────────────────
+  function openBeach() {
+    document.getElementById('beach-overlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    initBeach();
+  }
+
+  document.getElementById('beach-back').addEventListener('click', () => {
+    document.getElementById('beach-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    stopBeach();
+    const audio = document.getElementById('beach-audio');
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+    document.getElementById('beach-play-btn').textContent = '▶';
+    document.getElementById('beach-eq').classList.remove('playing');
+    document.getElementById('lyrics-panel').classList.remove('open');
   });
+
+  // ── Lyrics panel ───────────────────────────────────────────
+  document.getElementById('lyrics-toggle').addEventListener('click', () =>
+    document.getElementById('lyrics-panel').classList.toggle('open'));
+  document.getElementById('lyrics-close').addEventListener('click', () =>
+    document.getElementById('lyrics-panel').classList.remove('open'));
+
+  // ── Audio player ───────────────────────────────────────────
+  let beachAudioReady = false;
+  function initAudio() {
+    if (beachAudioReady) return;
+    beachAudioReady = true;
+    const audio    = document.getElementById('beach-audio');
+    const playBtn  = document.getElementById('beach-play-btn');
+    const fill     = document.getElementById('beach-progress-fill');
+    const track    = document.getElementById('beach-progress-track');
+    const timeEl   = document.getElementById('beach-player-time');
+    const eq       = document.getElementById('beach-eq');
+    const volRange = document.getElementById('beach-vol');
+    const volIcon  = document.getElementById('beach-vol-icon');
+
+    audio.src = './music_lekkerland.mp3';
+    audio.load();
+    audio.volume = 0.8;
+
+    audio.addEventListener('error', () => {
+      playBtn.textContent = '⚠';
+      playBtn.title = 'Audio file not found';
+    });
+
+    function fmt(s) {
+      if (!isFinite(s)) return '0:00';
+      return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+    }
+
+    let playing = false;
+    playBtn.addEventListener('click', () => {
+      if (playing) {
+        audio.pause();
+        playBtn.textContent = '▶';
+        eq.classList.remove('playing');
+        playing = false;
+      } else {
+        audio.play().then(() => {
+          playBtn.textContent = '⏸';
+          eq.classList.add('playing');
+          playing = true;
+        }).catch(err => {
+          console.error('Beach audio play failed:', err);
+          playBtn.textContent = '⚠';
+        });
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+      timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.textContent = '▶';
+      eq.classList.remove('playing');
+      playing = false;
+    });
+
+    track.addEventListener('click', e => {
+      if (!audio.duration) return;
+      const r = track.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+    });
+
+    volRange.addEventListener('input', () => {
+      audio.volume = +volRange.value;
+      volIcon.textContent = +volRange.value === 0 ? '🔇' : '🔊';
+    });
+
+    volIcon.addEventListener('click', () => {
+      if (audio.volume > 0) {
+        audio.volume = 0; volRange.value = 0; volIcon.textContent = '🔇';
+      } else {
+        audio.volume = 0.8; volRange.value = 0.8; volIcon.textContent = '🔊';
+      }
+    });
+  }
+
+  // ── Beach canvas animation ─────────────────────────────────
+  let beachRAF = null;
+  let beachCanvasReady = false;
+
+  function stopBeach() {
+    if (beachRAF) { cancelAnimationFrame(beachRAF); beachRAF = null; }
+  }
+
+  function initBeach() {
+    initAudio();
+    const canvas = document.getElementById('beach-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H, horizon, sandLine;
+
+    function resize() {
+      W        = canvas.width  = canvas.offsetWidth;
+      H        = canvas.height = canvas.offsetHeight;
+      horizon  = H * 0.47;
+      sandLine = H * 0.77;
+    }
+    resize();
+
+    const resizeOb = new ResizeObserver(resize);
+    resizeOb.observe(canvas);
+
+    const stars = Array.from({ length: 88 }, () => ({
+      x: Math.random(), y: Math.random() * 0.44,
+      r: Math.random() * 1.4 + 0.3,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 1.4 + 0.5,
+    }));
+
+    const clouds = Array.from({ length: 4 }, (_, i) => ({
+      x: i * 0.3 - 0.05, y: 0.06 + Math.random() * 0.15,
+      w: 95 + Math.random() * 115, h: 28 + Math.random() * 22,
+      speed: 0.022 + Math.random() * 0.014,
+      alpha: 0.16 + Math.random() * 0.14,
+    }));
+
+    const gulls = Array.from({ length: 7 }, () => ({
+      x: Math.random() * 1, y: 0.10 + Math.random() * 0.24,
+      speed: 22 + Math.random() * 32,
+      phase: Math.random() * Math.PI * 2,
+      size: 7 + Math.random() * 9,
+    }));
+
+    const foam = Array.from({ length: 38 }, () => ({
+      x: Math.random(), y: 0, vy: 0,
+      r: Math.random() * 2.4 + 0.7,
+      phase: Math.random() * Math.PI * 2,
+      life: Math.random() * 2, maxLife: 1.8 + Math.random() * 2,
+    }));
+
+    const leafData = [
+      { a: -0.42, l: 0.19, s: 0.06 }, { a: -0.82, l: 0.17, s: 0.07 },
+      { a: -1.22, l: 0.14, s: 0.08 }, { a: -1.62, l: 0.11, s: 0.09 },
+      { a:  0.18, l: 0.18, s: 0.06 }, { a:  0.58, l: 0.15, s: 0.07 },
+      { a:  0.98, l: 0.13, s: 0.08 }, { a:  1.38, l: 0.10, s: 0.10 },
+    ];
+
+    function qpt(t, ax, ay, bx, by, cx, cy) {
+      const u = 1 - t;
+      return { x: u*u*ax + 2*u*t*bx + t*t*cx, y: u*u*ay + 2*u*t*by + t*t*cy };
+    }
+    function waveY(x, t, yBase, speed, amp) {
+      return yBase
+        + Math.sin(x * 0.009 + t * speed)            * amp
+        + Math.sin(x * 0.018 + t * speed * 1.33 + 1) * amp * 0.37
+        + Math.sin(x * 0.005 + t * speed * 0.65 + 2) * amp * 0.27;
+    }
+
+    function drawSky() {
+      const g = ctx.createLinearGradient(0, 0, 0, horizon);
+      g.addColorStop(0, '#07102b'); g.addColorStop(0.32, '#17305e');
+      g.addColorStop(0.63, '#8a2050'); g.addColorStop(0.82, '#d4520a');
+      g.addColorStop(1, '#f5a420');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, horizon);
+    }
+    function drawStars(t) {
+      stars.forEach(s => {
+        ctx.globalAlpha = 0.32 + 0.36 * Math.sin(s.phase + t * s.speed);
+        ctx.fillStyle = '#fffde7'; ctx.beginPath();
+        ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
+    function drawSun(t) {
+      const sx = W * 0.7, sy = horizon + 1;
+      const halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, H * 0.44);
+      halo.addColorStop(0, 'rgba(255,168,28,.44)'); halo.addColorStop(0.26, 'rgba(255,88,8,.22)');
+      halo.addColorStop(0.56, 'rgba(180,28,0,.07)'); halo.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = halo; ctx.fillRect(0, 0, W, H * 0.72);
+      const sr = H * 0.065 * (1 + 0.028 * Math.sin(t * 2.6));
+      const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr);
+      sg.addColorStop(0, '#fffde7'); sg.addColorStop(0.45, '#ffe082'); sg.addColorStop(1, '#ff8f00');
+      ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+    }
+    function drawSunReflection(t) {
+      const sx = W * 0.7, shim = Math.sin(t * 3.3) * W * 0.014;
+      const rg = ctx.createLinearGradient(0, horizon, 0, sandLine);
+      rg.addColorStop(0, 'rgba(255,138,18,.36)'); rg.addColorStop(0.5, 'rgba(255,98,8,.14)');
+      rg.addColorStop(1, 'rgba(255,58,0,.02)');
+      ctx.fillStyle = rg; ctx.beginPath();
+      ctx.moveTo(sx - W*0.035 + shim*0.3, horizon); ctx.lineTo(sx + W*0.035 + shim*0.3, horizon);
+      ctx.lineTo(sx + W*0.13 + shim, sandLine);   ctx.lineTo(sx - W*0.13 + shim, sandLine);
+      ctx.closePath(); ctx.fill();
+    }
+    function drawClouds(dt) {
+      clouds.forEach(c => {
+        c.x += c.speed * dt;
+        if (c.x > 1.35) c.x = -0.22;
+        ctx.globalAlpha = c.alpha; ctx.fillStyle = '#ff9966';
+        for (let i = 0; i < 5; i++) {
+          ctx.beginPath();
+          ctx.arc(c.x * W + (i-2) * c.w * 0.22, c.y * H, c.h * (0.52 + Math.abs(Math.sin(i*1.4)) * 0.48), 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      });
+    }
+    function drawWaterLayer(t, yBase, speed, amp, color, alpha) {
+      ctx.beginPath(); ctx.moveTo(0, H);
+      for (let x = 0; x <= W + 4; x += 4) ctx.lineTo(x, waveY(x, t, yBase, speed, amp));
+      ctx.lineTo(W, H); ctx.closePath();
+      ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fill(); ctx.globalAlpha = 1;
+    }
+    function drawFoamCrest(t, yBase, speed, amp) {
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 3) {
+        const y = waveY(x, t, yBase, speed, amp);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.8;
+      ctx.globalAlpha = 0.42; ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    function drawWater(t) {
+      drawWaterLayer(t, horizon,            0.55, H*.010, '#004d6e', 1.0);
+      drawWaterLayer(t, horizon + H*.04,   0.80, H*.016, '#006f98', 0.88);
+      drawWaterLayer(t, horizon + H*.10,   1.10, H*.020, '#00a0be', 0.84);
+      drawWaterLayer(t, sandLine - H*.05,  1.62, H*.014, '#38cce4', 0.76);
+      drawFoamCrest(t, horizon + H*.04,   0.80, H*.016);
+      drawFoamCrest(t, sandLine - H*.05,  1.62, H*.014);
+    }
+    function drawSand(t) {
+      const g = ctx.createLinearGradient(0, sandLine, 0, H);
+      g.addColorStop(0, '#f5e4c4'); g.addColorStop(0.25, '#e8d4a4'); g.addColorStop(1, '#c6a468');
+      ctx.fillStyle = g; ctx.fillRect(0, sandLine, W, H - sandLine);
+      ctx.strokeStyle = 'rgba(135,85,35,.11)'; ctx.lineWidth = 1;
+      for (let i = 1; i <= 5; i++) {
+        const y = sandLine + i * (H - sandLine) / 6;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 6) {
+          const ry = y + Math.sin(x * .042 + t * .18 + i * 2.1) * 2.5;
+          x === 0 ? ctx.moveTo(x, ry) : ctx.lineTo(x, ry);
+        }
+        ctx.stroke();
+      }
+    }
+    function drawPalmTree(rootX, rootY, flipped, swayT) {
+      const trunkH = H * 0.27, lean = flipped ? 1 : -1;
+      const sway = Math.sin(swayT * .48) * 9 * lean;
+      const tipX = rootX + lean * trunkH * .37 + sway, tipY = rootY - trunkH;
+      const cpX  = rootX + lean * trunkH * .17 + sway * .42, cpY = rootY - trunkH * .52;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < 9; i++) {
+        const p0 = qpt(i/9,     rootX, rootY, cpX, cpY, tipX, tipY);
+        const p1 = qpt((i+1)/9, rootX, rootY, cpX, cpY, tipX, tipY);
+        ctx.strokeStyle = (i%2===0) ? '#7a5520' : '#8c6322';
+        ctx.lineWidth = Math.max(4, 14 - i * .85);
+        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+      }
+      const nutR = H * .013; ctx.fillStyle = '#5c3a1e';
+      for (let i = -1; i <= 1; i++) {
+        ctx.beginPath(); ctx.arc(tipX + i*nutR*1.6, tipY + nutR*.5, nutR, 0, Math.PI*2); ctx.fill();
+      }
+      const windSway = Math.sin(swayT * .48) * .11;
+      leafData.forEach((leaf, idx) => {
+        const angle = (flipped ? -leaf.a : leaf.a) + windSway * (idx%2===0 ? 1 : -.55);
+        const len = leaf.l * H, sag = leaf.s * H;
+        const ex = tipX + Math.sin(angle) * len, ey = tipY - Math.cos(angle) * len;
+        const mx = (tipX+ex)/2 + Math.cos(angle)*sag, my = (tipY+ey)/2 + sag*.88;
+        const hue = 102 + (idx*11)%38, lit = 28 + (idx*4)%18;
+        ctx.strokeStyle = `hsl(${hue},68%,${lit}%)`; ctx.lineWidth = Math.max(1.4, 5-idx*.4);
+        ctx.beginPath(); ctx.moveTo(tipX, tipY); ctx.quadraticCurveTo(mx, my, ex, ey); ctx.stroke();
+        ctx.lineWidth = 1.1; ctx.strokeStyle = `hsl(${hue},54%,${lit-5}%)`;
+        for (let j = 2; j <= 7; j++) {
+          const frac = j/8, pt = qpt(frac, tipX, tipY, mx, my, ex, ey);
+          const perp = angle + Math.PI*.5, ll = H*.013*(1-frac*.44);
+          ctx.beginPath();
+          ctx.moveTo(pt.x + Math.sin(perp+.35)*ll, pt.y - Math.cos(perp+.35)*ll);
+          ctx.lineTo(pt.x, pt.y);
+          ctx.lineTo(pt.x + Math.sin(perp-.35)*ll, pt.y - Math.cos(perp-.35)*ll);
+          ctx.stroke();
+        }
+      });
+    }
+    function drawSeagulls(t, dt) {
+      gulls.forEach(g => {
+        g.x = (g.x + g.speed * dt / W + 1) % 1;
+        const wingA = Math.sin(t*4.4 + g.phase), s = g.size;
+        ctx.globalAlpha = 0.52 + .22*Math.sin(t*.75+g.phase);
+        ctx.strokeStyle = 'rgba(228,228,255,.9)'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(g.x*W - s, g.y*H + wingA*s*.6);
+        ctx.quadraticCurveTo(g.x*W - s*.44, g.y*H - wingA*s*.33, g.x*W, g.y*H);
+        ctx.quadraticCurveTo(g.x*W + s*.44, g.y*H - wingA*s*.33, g.x*W + s, g.y*H + wingA*s*.6);
+        ctx.stroke(); ctx.globalAlpha = 1;
+      });
+    }
+    function drawFoam(t, dt) {
+      const shoreBase = sandLine - H*.05, shoreAmp = H*.014;
+      foam.forEach(p => {
+        p.life += dt;
+        if (p.life > p.maxLife) {
+          p.x = Math.random(); p.y = waveY(p.x*W, t, shoreBase, 1.62, shoreAmp);
+          p.vy = (Math.random()-.5)*9; p.life = 0;
+          p.maxLife = 1.6 + Math.random()*2; p.r = Math.random()*2.3+.6;
+        }
+        p.y += p.vy*dt; p.vy *= .94;
+        const lr = p.life/p.maxLife;
+        const a = lr<.2 ? lr/.2 : lr>.7 ? (1-lr)/.3 : 1;
+        ctx.globalAlpha = a*.52; ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(p.x*W, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    let prev = 0;
+    function loop(now) {
+      beachRAF = requestAnimationFrame(loop);
+      const dt = Math.min((now - prev) / 1000, 0.05); prev = now;
+      const t = now / 1000;
+      ctx.clearRect(0, 0, W, H);
+      drawSky(); drawStars(t); drawSun(t); drawSunReflection(t);
+      drawClouds(dt); drawWater(t); drawSand(t); drawFoam(t, dt);
+      drawPalmTree(W*.052, sandLine + H*.006, false, t);
+      drawPalmTree(W*.948, sandLine + H*.006, true,  t + .65);
+      drawSeagulls(t, dt);
+    }
+    beachRAF = requestAnimationFrame(loop);
+  }
 })();
