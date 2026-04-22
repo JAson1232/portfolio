@@ -2,6 +2,24 @@
    TRON PORTFOLIO — MAIN JAVASCRIPT
    ============================================================ */
 
+import { initISO }     from './iso.js';
+import { initBooking } from './booking.js';
+import { initAnalytics, logVisit, logClick, sessionId } from './analytics.js';
+
+initAnalytics();
+logVisit();
+
+// ── Global click tracker ─────────────────────────────────────
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  const tag = t.tagName?.toLowerCase() ?? 'unknown';
+  const id = t.id || null;
+  const classes = typeof t.className === 'string' ? t.className.trim() || null : null;
+  const text = t.textContent?.trim().slice(0, 120) || null;
+  const href = t.href || t.closest('a')?.href || null;
+  logClick({ tag, id, classes, text, href, x: Math.round(e.clientX), y: Math.round(e.clientY) });
+});
+
 // ============================================================
 // COURSES DATA  (VU Amsterdam — BSc Artificial Intelligence)
 // ============================================================
@@ -353,47 +371,190 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
-// ── Grid ──────────────────────────────────────────────────
-const GRID = 60;
-let gridOff = 0;
+const GRID = 60; // grid cell size (used by Stream + LightCycle)
 
-function drawGrid() {
-  bgCtx.strokeStyle = 'rgba(0,229,255,0.055)';
-  bgCtx.lineWidth = 0.5;
-  const ox = gridOff % GRID;
-  const oy = gridOff % GRID;
-  for (let x = -GRID + ox; x < W + GRID; x += GRID) {
-    bgCtx.beginPath(); bgCtx.moveTo(x, 0); bgCtx.lineTo(x, H); bgCtx.stroke();
+// ── 3D Perspective Grid ───────────────────────────────────
+let gridTime = 0;
+const GRID_RINGS  = 16;
+const GRID_SPOKES = 12;
+
+function drawGrid3D() {
+  const cx = W / 2;
+  const cy = H / 2;
+
+  gridTime += 0.0015; // slow drift
+
+  // Vignette
+  const vig = bgCtx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.72);
+  vig.addColorStop(0,   'rgba(4,9,26,0)');
+  vig.addColorStop(0.55,'rgba(4,9,26,0)');
+  vig.addColorStop(1,   'rgba(4,9,26,0.70)');
+  bgCtx.fillStyle = vig;
+  bgCtx.fillRect(0, 0, W, H);
+
+  // Spoke lines — very subtle
+  bgCtx.lineWidth = 0.4;
+  for (let i = 0; i <= GRID_SPOKES; i++) {
+    const t = i / GRID_SPOKES;
+    bgCtx.strokeStyle = 'rgba(0,229,255,0.03)';
+    bgCtx.beginPath(); bgCtx.moveTo(cx, cy); bgCtx.lineTo(W * t, 0);     bgCtx.stroke();
+    bgCtx.beginPath(); bgCtx.moveTo(cx, cy); bgCtx.lineTo(W * t, H);     bgCtx.stroke();
+    bgCtx.beginPath(); bgCtx.moveTo(cx, cy); bgCtx.lineTo(0,     H * t); bgCtx.stroke();
+    bgCtx.beginPath(); bgCtx.moveTo(cx, cy); bgCtx.lineTo(W,     H * t); bgCtx.stroke();
   }
-  for (let y = -GRID + oy; y < H + GRID; y += GRID) {
-    bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(W, y); bgCtx.stroke();
+
+  // Concentric rings — reduced opacity
+  for (let i = 0; i < GRID_RINGS; i++) {
+    const rawT = ((i / GRID_RINGS) + gridTime) % 1;
+    const t    = rawT * rawT;
+    const hw   = (W * 0.5 + 4) * t;
+    const hh   = (H * 0.5 + 4) * t;
+    if (hw < 2) continue;
+
+    bgCtx.strokeStyle = `rgba(0,229,255,${rawT * 0.10})`;
+    bgCtx.lineWidth   = 0.3 + t * 0.9;
+    if (rawT > 0.78) { bgCtx.shadowBlur = 6; bgCtx.shadowColor = '#00e5ff'; }
+    bgCtx.strokeRect(cx - hw, cy - hh, hw * 2, hh * 2);
+    bgCtx.shadowBlur = 0;
   }
 }
 
-// ── Particles ─────────────────────────────────────────────
-class Particle {
-  constructor() { this.reset(true); }
-  reset(init = false) {
-    this.x = Math.random() * W;
-    this.y = init ? Math.random() * H : (Math.random() < 0.5 ? -5 : H + 5);
-    this.vx = (Math.random() - 0.5) * 0.6;
-    this.vy = (Math.random() - 0.5) * 0.6;
-    this.r  = Math.random() * 1.8 + 0.6;
-    this.a  = Math.random() * 0.5 + 0.1;
-    this.life  = 1;
-    this.decay = Math.random() * 0.0015 + 0.0008;
-  }
-  update() {
-    this.x += this.vx; this.y += this.vy; this.life -= this.decay;
-    if (this.life <= 0 || this.x < -20 || this.x > W + 20 || this.y < -20 || this.y > H + 20) this.reset();
-  }
-  draw() {
+// ── TRON City Buildings ───────────────────────────────────
+// Buildings share the same center vanishing point as the grid.
+// xOff: world-space lateral offset from centre (+ = right, - = left)
+// depth: 0=viewer, 1=horizon — controls perspective scale
+const BUILDING_DEFS = [
+  // far row (near horizon)
+  { xOff:  115, depth: 0.92, w: 30,  h: 140 },
+  { xOff: -125, depth: 0.91, w: 36,  h: 170 },
+  { xOff:  235, depth: 0.89, w: 26,  h: 105 },
+  { xOff: -245, depth: 0.88, w: 31,  h: 138 },
+  { xOff:  370, depth: 0.87, w: 38,  h: 152 },
+  { xOff: -380, depth: 0.86, w: 33,  h: 168 },
+  // mid row
+  { xOff:  168, depth: 0.72, w: 56,  h: 268 },
+  { xOff: -182, depth: 0.70, w: 62,  h: 298 },
+  { xOff:  335, depth: 0.68, w: 50,  h: 222 },
+  { xOff: -350, depth: 0.66, w: 54,  h: 248 },
+  { xOff:  495, depth: 0.74, w: 45,  h: 188 },
+  { xOff: -510, depth: 0.73, w: 48,  h: 198 },
+  // near row
+  { xOff:  288, depth: 0.52, w: 92,  h: 358 },
+  { xOff: -308, depth: 0.50, w: 87,  h: 390 },
+  { xOff:  495, depth: 0.55, w: 77,  h: 284 },
+  { xOff: -515, depth: 0.53, w: 82,  h: 318 },
+];
+
+let buildPulse = 0;
+
+function drawBuildings() {
+  buildPulse += 0.018;
+  const pulse = 0.5 + 0.5 * Math.sin(buildPulse);
+
+  const vpx = W / 2;
+  const vpy = H / 2;
+
+  // Draw far → near so closer buildings paint on top
+  const sorted = [...BUILDING_DEFS].sort((a, b) => b.depth - a.depth);
+
+  for (const def of sorted) {
+    const { xOff, depth, w, h } = def;
+    const scale = 1 - depth;
+
+    // Perspective projection onto screen
+    const baseY  = vpy + (H - vpy) * scale;       // base sits on the "floor" plane
+    const baseCX = vpx + xOff * scale;             // converges toward VP horizontally
+    const sw     = w * scale;
+    const sh     = h * scale;
+    if (sw < 3 || sh < 4) continue;
+
+    const fl = baseCX - sw / 2;
+    const fr = baseCX + sw / 2;
+    const ft = baseY - sh;
+    const fb = baseY;
+
+    // Side/depth offset: back corners shift toward the vanishing point.
+    // Right buildings (xOff>0) → back goes left; left buildings → back goes right.
+    const sideW = sw * 0.30;
+    const sideH = sideW * 0.40;
+    const sdx   = xOff >= 0 ? -sideW : +sideW;
+    const sdy   = -sideH;
+
+    const edgeAlpha = 0.20 + scale * 0.48;
+
+    // ── Side face ──────────────────────────────────────
     bgCtx.beginPath();
-    bgCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-    bgCtx.fillStyle = `rgba(0,229,255,${this.a * this.life})`;
-    bgCtx.shadowBlur = 8; bgCtx.shadowColor = '#00e5ff';
-    bgCtx.fill(); bgCtx.shadowBlur = 0;
+    if (xOff >= 0) {
+      bgCtx.moveTo(fl,       ft);
+      bgCtx.lineTo(fl + sdx, ft + sdy);
+      bgCtx.lineTo(fl + sdx, fb + sdy);
+      bgCtx.lineTo(fl,       fb);
+    } else {
+      bgCtx.moveTo(fr,       ft);
+      bgCtx.lineTo(fr + sdx, ft + sdy);
+      bgCtx.lineTo(fr + sdx, fb + sdy);
+      bgCtx.lineTo(fr,       fb);
+    }
+    bgCtx.closePath();
+    bgCtx.fillStyle = 'rgba(0,10,24,0.92)';
+    bgCtx.fill();
+    bgCtx.strokeStyle = `rgba(0,229,255,${edgeAlpha * 0.55})`;
+    bgCtx.lineWidth = 0.5 + scale * 0.5;
+    bgCtx.stroke();
+
+    // ── Front face ─────────────────────────────────────
+    bgCtx.beginPath();
+    bgCtx.rect(fl, ft, sw, sh);
+    bgCtx.fillStyle = 'rgba(4,9,26,0.90)';
+    bgCtx.fill();
+
+    // Horizontal floor lines
+    if (sh > 16) {
+      const numFloors = Math.max(2, Math.round(sh / 12));
+      bgCtx.strokeStyle = `rgba(0,229,255,${0.06 + scale * 0.05})`;
+      bgCtx.lineWidth = 0.4;
+      const fh = sh / numFloors;
+      for (let i = 1; i < numFloors; i++) {
+        const fy = ft + i * fh;
+        bgCtx.beginPath(); bgCtx.moveTo(fl, fy); bgCtx.lineTo(fr, fy); bgCtx.stroke();
+      }
+    }
+
+    bgCtx.strokeStyle = `rgba(0,229,255,${edgeAlpha})`;
+    bgCtx.lineWidth = 0.7 + scale * 1.0;
+    bgCtx.strokeRect(fl, ft, sw, sh);
+
+    // ── Top face ───────────────────────────────────────
+    bgCtx.beginPath();
+    bgCtx.moveTo(fl,       ft);
+    bgCtx.lineTo(fr,       ft);
+    bgCtx.lineTo(fr + sdx, ft + sdy);
+    bgCtx.lineTo(fl + sdx, ft + sdy);
+    bgCtx.closePath();
+    bgCtx.fillStyle = 'rgba(0,20,48,0.88)';
+    bgCtx.fill();
+    bgCtx.strokeStyle = `rgba(0,229,255,${edgeAlpha})`;
+    bgCtx.lineWidth = 0.7 + scale * 0.8;
+    bgCtx.stroke();
+
+    // ── Top edge glow (closer buildings only) ──────────
+    if (scale > 0.28) {
+      bgCtx.shadowBlur  = 6 + 4 * scale;
+      bgCtx.shadowColor = '#00e5ff';
+      bgCtx.strokeStyle = `rgba(0,229,255,${edgeAlpha * (0.80 + pulse * 0.20)})`;
+      bgCtx.lineWidth   = 1.0 + scale;
+      bgCtx.beginPath(); bgCtx.moveTo(fl, ft); bgCtx.lineTo(fr, ft); bgCtx.stroke();
+      bgCtx.shadowBlur  = 0;
+    }
   }
+
+  // ── Horizon atmosphere glow ─────────────────────────────
+  const hg = bgCtx.createLinearGradient(0, vpy - 4, 0, vpy + 40);
+  hg.addColorStop(0,   'rgba(0,229,255,0.07)');
+  hg.addColorStop(0.5, 'rgba(0,229,255,0.02)');
+  hg.addColorStop(1,   'rgba(0,229,255,0)');
+  bgCtx.fillStyle = hg;
+  bgCtx.fillRect(0, vpy - 4, W, 44);
 }
 
 // ── Data Streams ──────────────────────────────────────────
@@ -441,29 +602,8 @@ class Stream {
   }
 }
 
-// ── Intersection nodes (grid crossings that light up) ─────
-class GridNode {
-  constructor() { this.reset(); }
-  reset() {
-    const col = Math.floor(Math.random() * (W / GRID));
-    const row = Math.floor(Math.random() * (H / GRID));
-    this.x = col * GRID; this.y = row * GRID;
-    this.life = 1; this.decay = Math.random() * 0.005 + 0.002;
-    this.r = Math.random() * 3 + 1;
-  }
-  update() { this.life -= this.decay; if (this.life <= 0) this.reset(); }
-  draw() {
-    bgCtx.beginPath();
-    bgCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-    bgCtx.fillStyle = `rgba(0,229,255,${0.45 * this.life})`;
-    bgCtx.shadowBlur = 10; bgCtx.shadowColor = '#00e5ff';
-    bgCtx.fill(); bgCtx.shadowBlur = 0;
-  }
-}
 
-const particles  = Array.from({ length: 55 }, () => new Particle());
-const streams    = Array.from({ length: 9  }, () => new Stream());
-const gridNodes  = Array.from({ length: 18 }, () => new GridNode());
+const streams   = Array.from({ length: 4 }, () => new Stream());
 
 // ── Light Cycles ──────────────────────────────────────────
 class LightCycle {
@@ -658,42 +798,14 @@ lightCycles.forEach(c => {
   setTimeout(() => { c.started = true; }, c.startDelay);
 });
 
-// ── Cursor trail ──────────────────────────────────────────
-const trailPts = [];
-document.addEventListener('mousemove', e => {
-  trailPts.push({ x: e.clientX, y: e.clientY });
-  if (trailPts.length > 32) trailPts.shift();
-});
-
-function drawTrail() {
-  if (trailPts.length < 2) return;
-  for (let i = 1; i < trailPts.length; i++) {
-    const t  = trailPts[i];
-    const t0 = trailPts[i - 1];
-    const a  = (i / trailPts.length) * 0.45;
-    const w  = (i / trailPts.length) * 2;
-    bgCtx.beginPath();
-    bgCtx.moveTo(t0.x, t0.y); bgCtx.lineTo(t.x, t.y);
-    bgCtx.strokeStyle = `rgba(0,229,255,${a})`;
-    bgCtx.lineWidth = w;
-    bgCtx.shadowBlur = 6; bgCtx.shadowColor = '#00e5ff';
-    bgCtx.stroke(); bgCtx.shadowBlur = 0;
-  }
-}
-
 // ── Animate ───────────────────────────────────────────────
 function bgAnimate() {
   bgCtx.clearRect(0, 0, W, H);
-  gridOff += 0.25;
 
-  drawGrid();
+  drawBuildings();
 
-  gridNodes.forEach(n  => { n.update();  n.draw();  });
-  streams.forEach(s    => { s.update();  s.draw();  });
-  lightCycles.forEach(c => { c.update(); c.draw();  });
-  particles.forEach(p  => { p.update();  p.draw();  });
-
-  drawTrail();
+  streams.forEach(s     => { s.update();  s.draw();  });
+  lightCycles.forEach(c => { c.update();  c.draw();  });
 
   requestAnimationFrame(bgAnimate);
 }
@@ -792,18 +904,15 @@ renderCourses('all');
       return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
     }
 
-    let playing = false;
     playBtn.addEventListener('click', () => {
-      if (playing) {
+      if (!audio.paused) {
         audio.pause();
         playBtn.textContent = '▶';
         eq.classList.remove('playing');
-        playing = false;
       } else {
         audio.play().then(() => {
           playBtn.textContent = '⏸';
           eq.classList.add('playing');
-          playing = true;
         }).catch(err => {
           console.error('Beach audio play failed:', err);
           playBtn.textContent = '⚠';
@@ -820,7 +929,6 @@ renderCourses('all');
     audio.addEventListener('ended', () => {
       playBtn.textContent = '▶';
       eq.classList.remove('playing');
-      playing = false;
     });
 
     track.addEventListener('click', e => {
@@ -1085,3 +1193,46 @@ renderCourses('all');
     beachRAF = requestAnimationFrame(loop);
   }
 })();
+
+// ============================================================
+// ARIA WIDGET — expand / collapse + lazy init on first open
+// ============================================================
+(function () {
+  const widget   = document.getElementById('aria-widget');
+  const topBar   = document.getElementById('aria-widget-top');
+  const colBtn   = document.getElementById('aria-collapse-btn');
+  if (!widget || !topBar || !colBtn) return;
+
+  let collapsed  = false;
+  let isoReady   = false;
+
+  function setCollapsed(val) {
+    collapsed = val;
+    widget.classList.toggle('collapsed', collapsed);
+    colBtn.textContent = collapsed ? '+' : '−';
+    colBtn.title       = collapsed ? 'Expand' : 'Minimise';
+
+    // Lazy-init ARIA on first expand
+    if (!collapsed && !isoReady) {
+      isoReady = true;
+      initISO();
+    }
+
+    // Focus input when expanding
+    if (!collapsed) {
+      setTimeout(() => {
+        const inp = document.getElementById('iso-input');
+        if (inp) inp.focus();
+      }, 50);
+    }
+  }
+
+  topBar.addEventListener('click', () => setCollapsed(!collapsed));
+
+  // Widget starts open — init ARIA immediately
+  isoReady = true;
+  initISO();
+})();
+
+// ── Booking widget ─────────────────────────────────────────────
+initBooking();

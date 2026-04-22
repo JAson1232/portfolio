@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IASON SOMOGLOU // THE GRID</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="./assets/index-bcSiJJHj.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DduaqMRw.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Pacifico&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="./assets/index-DD-muelk.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DbBvn4GV.css">
 </head>
 <body>
 
@@ -127,7 +127,7 @@
             <div class="bio-badges">
               <span class="badge">Forbes 30U30 Greece</span>
               <span class="badge">Patent Holder</span>
-              <span class="badge">WRO World Champion</span>
+              <span class="badge">IRO World Champion</span>
             </div>
           </div>
 
@@ -624,6 +624,9 @@
                 <span class="cl-arrow">→</span>
               </a>
             </div>
+            <button id="booking-open-btn" class="btn-secondary" style="margin-top:1.5rem;width:100%;">
+              ⬡ SCHEDULE A MEETING
+            </button>
           </div>
 
           <!-- Right: form -->
@@ -669,8 +672,280 @@
     </div>
   </footer>
 
+  <!-- ══ SECRET ACCESS ══════════════════════════════════════════ -->
+  <div id="secret-access" class="secret-access">
+    <span class="secret-prompt">//</span>
+    <input
+      type="password"
+      id="secret-input"
+      class="secret-input"
+      placeholder="access"
+      maxlength="20"
+      autocomplete="off"
+      spellcheck="false"
+    />
+  </div>
+
+  <!-- ══ BEACH OVERLAY ═══════════════════════════════════════════ -->
+  <div id="beach-overlay" class="beach-overlay hidden">
+    <canvas id="beach-canvas"></canvas>
+
+    <div class="beach-title-wrap">
+      <div class="beach-title">🌴 LekkerLand Vibes 🌴</div>
+      <div class="beach-subtitle">♪ Reggae Crusade ♪</div>
+    </div>
+
+    <button class="beach-back-btn" id="beach-back">← BACK TO THE GRID</button>
+    <button class="lyrics-toggle" id="lyrics-toggle">🎶 LYRICS</button>
+
+    <div class="lyrics-panel" id="lyrics-panel">
+      <div class="lyrics-header">
+        <span class="lyrics-title-label">🎵 LekkerLand Vibes</span>
+        <button class="lyrics-close" id="lyrics-close">✕</button>
+      </div>
+      <div class="lyrics-body">
+        <div class="ly-section">
+          <div class="ly-label">Verse 1</div>
+          <p class="ly-line">Welcome to a place called LekkerLand,</p>
+          <p class="ly-line">Sun in the sky, drink in your hand,</p>
+          <p class="ly-line">Feels like heaven, yeah life is grand,</p>
+          <p class="ly-line">But there's one thing we didn't plan…</p>
+        </div>
+        <div class="ly-section">
+          <div class="ly-label">Pre-Chorus</div>
+          <p class="ly-line">'Cause the books stack high, pressure in the air,</p>
+          <p class="ly-line">"Tentamens" coming—man, it's not fair,</p>
+          <p class="ly-line">Tryna stay chill but we're all aware,</p>
+          <p class="ly-line">Deadlines hitting like we don't care…</p>
+        </div>
+        <div class="ly-section ly-chorus">
+          <div class="ly-label">Chorus</div>
+          <p class="ly-line">In LekkerLand we're living free,</p>
+          <p class="ly-line">Clouds of smoke and anxiety,</p>
+          <p class="ly-line">Dreaming big but barely sleep,</p>
+          <p class="ly-line">Promises we never keep…</p>
+          <p class="ly-line">Laugh it off, just one more night,</p>
+          <p class="ly-line">Balancing stress and city lights,</p>
+          <p class="ly-line">Paradise but something's wrong,</p>
+          <p class="ly-line">Still we turn it to a song 🎶</p>
+        </div>
+        <div class="ly-section">
+          <div class="ly-label">Verse 2</div>
+          <p class="ly-line">Joints getting rolled on the balcony view,</p>
+          <p class="ly-line">Ritalin pills just to make it through,</p>
+          <p class="ly-line">Focus up—yeah, that's the move,</p>
+          <p class="ly-line">Even if we got nothing to prove…</p>
+          <p class="ly-line" style="height:.4rem"></p>
+          <p class="ly-line">Pavlo's shower number five today,</p>
+          <p class="ly-line">Steam in the air, washing stress away,</p>
+          <p class="ly-line">Same routine, never gonna change,</p>
+          <p class="ly-line">We just laugh like it's all okay…</p>
+        </div>
+        <div class="ly-section">
+          <div class="ly-label">Verse 3</div>
+          <p class="ly-line">Achillea's mad 'bout the supermarket run,</p>
+          <p class="ly-line">"Why's it always me?"—yeah here we go again,</p>
+          <p class="ly-line">Complaining loud but it's kinda fun,</p>
+          <p class="ly-line">We all know she'll still get it done…</p>
+          <p class="ly-line" style="height:.4rem"></p>
+          <p class="ly-line">Jason's out, yeah living fast,</p>
+          <p class="ly-line">Different stories every night he's passed,</p>
+          <p class="ly-line">Living life like it won't last,</p>
+          <p class="ly-line">Legend growing way too vast…</p>
+        </div>
+        <div class="ly-section">
+          <div class="ly-label">Verse 4 — 🇪🇸 Spanish</div>
+          <p class="ly-line">En LekkerLand no hay control,</p>
+          <p class="ly-line">Fiesta, risas, perdiendo el rol,</p>
+          <p class="ly-line">Con humo subiendo bajo el sol,</p>
+          <p class="ly-line">Y los exámenes rompen el flow…</p>
+          <p class="ly-line" style="height:.4rem"></p>
+          <p class="ly-line">Pavlo en la ducha otra vez más,</p>
+          <p class="ly-line">Achillea quejándose sin parar,</p>
+          <p class="ly-line">Vivimos rápido sin pensar,</p>
+          <p class="ly-line">Pero este momento no va a acabar…</p>
+        </div>
+        <div class="ly-section">
+          <div class="ly-label">Verse 5 — 🇬🇷 Greek</div>
+          <p class="ly-line">Στο LekkerLand ζούμε τρελά,</p>
+          <p class="ly-line">Γέλια, φώτα και μουσική,</p>
+          <p class="ly-line">Τα άγχη φεύγουν προσωρινά,</p>
+          <p class="ly-line">Μα τα "Tentamens" είναι ξανά μπροστά…</p>
+          <p class="ly-line" style="height:.4rem"></p>
+          <p class="ly-line">Ο Παύλος κάνει ντους ξανά,</p>
+          <p class="ly-line">Η Αχιλλέας λέει "δεν πάω σούπερ μάρκετ, μαν!",</p>
+          <p class="ly-line">Ζούμε στιγμές μοναδικές,</p>
+          <p class="ly-line">Κι όλα φαίνονται μαγικά…</p>
+        </div>
+        <div class="ly-section">
+          <div class="ly-label">Bridge</div>
+          <p class="ly-line">Meanwhile time just slips away,</p>
+          <p class="ly-line">Two years gone in a different way,</p>
+          <p class="ly-line">Pavlo, Achillea—no words to say,</p>
+          <p class="ly-line">Just vibes and jokes to save the day…</p>
+        </div>
+        <div class="ly-section ly-chorus">
+          <div class="ly-label">Chorus</div>
+          <p class="ly-line">In LekkerLand we're living free,</p>
+          <p class="ly-line">Chaos mixed with harmony,</p>
+          <p class="ly-line">Running from reality,</p>
+          <p class="ly-line">Still stuck in this fantasy…</p>
+          <p class="ly-line">Laugh it off, just one more night,</p>
+          <p class="ly-line">Wrong decisions feel so right,</p>
+          <p class="ly-line">Paradise but something's strong—</p>
+          <p class="ly-line">It's the place where we belong 🎶</p>
+        </div>
+        <div class="ly-section">
+          <div class="ly-label">Outro</div>
+          <p class="ly-line">So here's to stress and late-night plans,</p>
+          <p class="ly-line">To messy lives and shaky hands,</p>
+          <p class="ly-line">LekkerLand, we understand…</p>
+          <p class="ly-line">It's perfect chaos, just as planned. 🎶</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="beach-player">
+      <div class="beach-player-name">🎵 LekkerLand Vibes × Reggae Crusade</div>
+      <div class="beach-player-main">
+        <button class="beach-play-btn" id="beach-play-btn" aria-label="Play/Pause">▶</button>
+        <div class="beach-player-right">
+          <div class="beach-player-top">
+            <div class="beach-eq" id="beach-eq">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="beach-progress-track" id="beach-progress-track">
+              <div class="beach-progress-fill" id="beach-progress-fill"></div>
+            </div>
+          </div>
+          <div class="beach-player-time" id="beach-player-time">0:00 / 0:00</div>
+          <div class="beach-vol-row">
+            <span class="beach-vol-icon" id="beach-vol-icon">🔊</span>
+            <input type="range" class="beach-vol" id="beach-vol" min="0" max="1" step="0.01" value="0.8" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rasta-bar"></div>
+    <audio id="beach-audio" loop></audio>
+  </div>
+
+  <!-- ══ BOOKING MODAL ════════════════════════════════════════ -->
+  <div id="booking-modal" class="booking-modal hidden">
+    <div class="booking-panel">
+
+      <div class="booking-header">
+        <div>
+          <div class="booking-tag">// SCHEDULE TRANSMISSION</div>
+          <h2 class="booking-title">BOOK A MEETING</h2>
+        </div>
+        <button class="booking-close-btn" id="booking-close-btn">✕</button>
+      </div>
+
+      <!-- Step 1: Date -->
+      <div id="booking-step-date" class="booking-step">
+        <p class="booking-step-hint">// SELECT DATE — NEXT 14 CYCLES // ALL TIMES IN AMSTERDAM (CET/CEST)</p>
+        <div class="booking-date-grid" id="booking-date-grid"></div>
+      </div>
+
+      <!-- Step 2: Slot -->
+      <div id="booking-step-slot" class="booking-step hidden">
+        <div class="booking-step-nav">
+          <button id="booking-back-slot" class="booking-back-btn">← BACK</button>
+          <span id="booking-selected-date" class="booking-step-hint"></span>
+        </div>
+        <p class="booking-step-hint" style="margin-top:0.5rem">// AFTER-17:00 SLOTS — OCCUPIED SLOTS ARE CLASSIFIED</p>
+        <div class="booking-slot-grid" id="booking-slot-grid"></div>
+      </div>
+
+      <!-- Step 3: Form -->
+      <div id="booking-step-form" class="booking-step hidden">
+        <div class="booking-step-nav">
+          <button id="booking-back-form" class="booking-back-btn">← BACK</button>
+          <span class="booking-step-hint">// SLOT: <span id="booking-slot-label"></span></span>
+        </div>
+        <form id="booking-form" class="booking-form" novalidate>
+          <div class="booking-field">
+            <label class="booking-label">// YOUR NAME</label>
+            <input type="text" id="booking-name" class="booking-input" placeholder="IDENTIFIER" required />
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">// EMAIL ADDRESS</label>
+            <input type="email" id="booking-email" class="booking-input" placeholder="RETURN_ADDRESS" required />
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">// DURATION</label>
+            <select id="booking-duration" class="booking-input">
+              <option value="30">30 MINUTES</option>
+              <option value="60">60 MINUTES</option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">// NOTES (OPTIONAL)</label>
+            <textarea id="booking-notes" class="booking-input" rows="3" placeholder="AGENDA / PURPOSE..."></textarea>
+          </div>
+          <div id="booking-form-error" class="booking-form-error hidden"></div>
+          <button type="submit" id="booking-submit" class="btn-primary" style="width:100%;margin-top:0.5rem;">TRANSMIT BOOKING</button>
+        </form>
+      </div>
+
+      <!-- Step 4: Confirm -->
+      <div id="booking-step-confirm" class="booking-step hidden">
+        <div class="booking-confirm-icon">✓</div>
+        <h3 class="booking-confirm-title">// TRANSMISSION CONFIRMED</h3>
+        <p class="booking-step-hint">Meeting booked. Check your email for confirmation.</p>
+        <div id="booking-confirm-summary" class="booking-confirm-summary"></div>
+        <button id="booking-new-btn" class="btn-secondary" style="margin-top:1.5rem;">SCHEDULE ANOTHER</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Hidden YouTube player container -->
   <div id="yt-player" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;"></div>
+
+  <!-- ══ ARIA WIDGET (floating, bottom-left) ═══════════════ -->
+  <div id="aria-widget" class="aria-widget">
+
+    <!-- Header row — always visible, click to expand/collapse -->
+    <div class="aria-widget-top" id="aria-widget-top">
+      <div class="iso-avatar-mini">
+        <div class="iso-ring-a"></div>
+        <div class="iso-ring-b"></div>
+        <span class="iso-avatar-letter">Q</span>
+      </div>
+      <div class="aria-widget-meta">
+        <div class="aria-widget-name">QUORRA <span class="iso-badge">// ISO-7</span></div>
+        <div class="aria-widget-sub"><span class="iso-pulse-dot"></span> ASK ME ANYTHING</div>
+      </div>
+      <button class="aria-collapse-btn" id="aria-collapse-btn" title="Minimise">−</button>
+    </div>
+
+    <!-- Chat body — hidden when collapsed -->
+    <div class="aria-widget-body">
+      <div class="iso-chat" id="iso-chat"></div>
+
+      <div class="iso-typing hidden" id="iso-typing">
+        <span class="iso-typing-label">QUORRA IS PROCESSING</span>
+        <div class="iso-typing-dots"><span></span><span></span><span></span></div>
+      </div>
+
+      <div class="iso-input-row">
+        <span class="iso-prompt">&gt;&gt;</span>
+        <input
+          type="text"
+          id="iso-input"
+          class="iso-input"
+          placeholder="TRANSMIT MESSAGE..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="iso-send" class="iso-send-btn">SEND</button>
+      </div>
+    </div>
+
+  </div>
 
   <!-- ══ MUSIC WIDGET ═══════════════════════════════════════ -->
   <div id="music-widget" class="music-widget">
@@ -707,7 +982,7 @@
         videoId: '-2C_P2N0LA8',
         playerVars: {
           autoplay:   1,
-          mute:       1,
+          mute:       1,   // must start muted — browsers block unmuted autoplay
           controls:   0,
           loop:       1,
           playlist:   '-2C_P2N0LA8',
@@ -732,6 +1007,7 @@
 
       // Mute / unmute toggle
       document.getElementById('music-mute-btn').addEventListener('click', function () {
+        autoUnmuted = true; // prevent auto-unmute from firing after a manual mute
         if (player.isMuted()) {
           player.unMute();
           document.getElementById('mute-icon').textContent  = '🔊';
