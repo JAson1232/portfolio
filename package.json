@@ -13,5 +13,10 @@
   "license": "ISC",
   "devDependencies": {
     "vite": "^8.0.0"
+  },
+  "dependencies": {
+    "@emailjs/browser": "^4.4.1",
+    "@google/generative-ai": "^0.24.1",
+    "firebase": "^12.11.0"
   }
 }

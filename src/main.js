@@ -220,9 +220,6 @@ function renderCourses(filter = 'all') {
     });
 
     coursesGrid.appendChild(card);
-
-    // Observe for reveal
-    revealObserver.observe(card);
   });
 }
 
@@ -235,21 +232,20 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 // ============================================================
-// INTERSECTION OBSERVER — SCROLL REVEAL
+// INTERSECTION OBSERVER — SECTION SLIDE-UP
+// Each section-container rises as a whole unit when scrolled into view.
 // ============================================================
-const revealObserver = new IntersectionObserver(entries => {
-  entries.forEach((entry, i) => {
+const sectionObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
     if (entry.isIntersecting) {
-      const el = entry.target;
-      const delay = parseFloat(el.style.transitionDelay) || i * 80;
-      setTimeout(() => el.classList.add('revealed'), delay);
-      revealObserver.unobserve(el);
+      entry.target.classList.add('s-visible');
+      sectionObserver.unobserve(entry.target);
     }
   });
-}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+}, { threshold: 0.06, rootMargin: '0px 0px -60px 0px' });
 
-document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
-  revealObserver.observe(el);
+document.querySelectorAll('.section-container').forEach(el => {
+  sectionObserver.observe(el);
 });
 
 // Skill bar fill animation
@@ -386,9 +382,9 @@ function drawGrid3D() {
 
   // Vignette
   const vig = bgCtx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.72);
-  vig.addColorStop(0,   'rgba(4,9,26,0)');
-  vig.addColorStop(0.55,'rgba(4,9,26,0)');
-  vig.addColorStop(1,   'rgba(4,9,26,0.70)');
+  vig.addColorStop(0,   'rgba(13,21,37,0)');
+  vig.addColorStop(0.55,'rgba(13,21,37,0)');
+  vig.addColorStop(1,   'rgba(13,21,37,0.65)');
   bgCtx.fillStyle = vig;
   bgCtx.fillRect(0, 0, W, H);
 
@@ -480,7 +476,7 @@ function drawBuildings() {
     const sdx   = xOff >= 0 ? -sideW : +sideW;
     const sdy   = -sideH;
 
-    const edgeAlpha = 0.20 + scale * 0.48;
+    const edgeAlpha = 0.08 + scale * 0.20;
 
     // ── Side face ──────────────────────────────────────
     bgCtx.beginPath();
@@ -496,7 +492,7 @@ function drawBuildings() {
       bgCtx.lineTo(fr,       fb);
     }
     bgCtx.closePath();
-    bgCtx.fillStyle = 'rgba(0,10,24,0.92)';
+    bgCtx.fillStyle = 'rgba(10,18,38,0.90)';
     bgCtx.fill();
     bgCtx.strokeStyle = `rgba(0,229,255,${edgeAlpha * 0.55})`;
     bgCtx.lineWidth = 0.5 + scale * 0.5;
@@ -505,7 +501,7 @@ function drawBuildings() {
     // ── Front face ─────────────────────────────────────
     bgCtx.beginPath();
     bgCtx.rect(fl, ft, sw, sh);
-    bgCtx.fillStyle = 'rgba(4,9,26,0.90)';
+    bgCtx.fillStyle = 'rgba(13,21,37,0.88)';
     bgCtx.fill();
 
     // Horizontal floor lines
@@ -531,7 +527,7 @@ function drawBuildings() {
     bgCtx.lineTo(fr + sdx, ft + sdy);
     bgCtx.lineTo(fl + sdx, ft + sdy);
     bgCtx.closePath();
-    bgCtx.fillStyle = 'rgba(0,20,48,0.88)';
+    bgCtx.fillStyle = 'rgba(15,28,55,0.85)';
     bgCtx.fill();
     bgCtx.strokeStyle = `rgba(0,229,255,${edgeAlpha})`;
     bgCtx.lineWidth = 0.7 + scale * 0.8;
@@ -562,10 +558,10 @@ class Stream {
   constructor() { this.reset(); }
   reset() {
     this.horiz  = Math.random() > 0.5;
-    this.color  = Math.random() > 0.85 ? '#ff00ff' : '#00e5ff';
-    this.speed  = Math.random() * 2.5 + 0.8;
-    this.len    = Math.random() * 100 + 50;
-    this.alpha  = Math.random() * 0.55 + 0.25;
+    this.color  = '#00c8e8';
+    this.speed  = Math.random() * 1.5 + 0.5;
+    this.len    = Math.random() * 80 + 40;
+    this.alpha  = Math.random() * 0.22 + 0.08;
     if (this.horiz) {
       const row = Math.floor(Math.random() * (H / GRID));
       this.x = -this.len; this.y = row * GRID;
@@ -603,7 +599,7 @@ class Stream {
 }
 
 
-const streams   = Array.from({ length: 4 }, () => new Stream());
+const streams   = Array.from({ length: 2 }, () => new Stream());
 
 // ── Light Cycles ──────────────────────────────────────────
 class LightCycle {
@@ -683,7 +679,7 @@ class LightCycle {
       if (from >= pts.length - 1) break;
 
       const t = (s + 0.5) / BATCHES;
-      const alpha = Math.pow(t, 1.6) * 0.88;
+      const alpha = Math.pow(t, 1.6) * 0.38;
 
       bgCtx.beginPath();
       bgCtx.moveTo(pts[from].x, pts[from].y);
@@ -788,11 +784,9 @@ class LightCycle {
   }
 }
 
-// Three cycles — 2 blue, 1 pink — staggered start times
+// One cycle — subtle blue only
 const lightCycles = [
-  new LightCycle('#00e5ff', 0),
-  new LightCycle('#ff00ff', 2500),
-  new LightCycle('#00e5ff', 5000),
+  new LightCycle('#00c8e8', 0),
 ];
 lightCycles.forEach(c => {
   setTimeout(() => { c.started = true; }, c.startDelay);
@@ -890,7 +884,7 @@ renderCourses('all');
     const volRange = document.getElementById('beach-vol');
     const volIcon  = document.getElementById('beach-vol-icon');
 
-    audio.src = './music_lekkerland.mp3';
+    audio.src = './music_lekkerland.mp3?v=2';
     audio.load();
     audio.volume = 0.8;
 
